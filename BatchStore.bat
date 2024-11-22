@@ -1,9 +1,9 @@
-
 @echo off
 setlocal EnableDelayedExpansion
 
 title BatchStore
 
+:: Устанавливаем пути для плагинов, профилей, загрузок и репозитория
 set "plugins_dir=plugins"
 set "profile_dir=profile"
 set "download_dir=download"
@@ -11,6 +11,7 @@ set "repo_url=https://github.com/Distendo/BatchStore.git"
 set "repo_dir=BatchStore"
 set "time_file=last_time.txt"
 
+:: Проверяем, установлен ли Git
 git --version >nul 2>&1
 if errorlevel 1 (
     echo Git не установлен! Установите Git для работы с этим приложением.
@@ -18,10 +19,12 @@ if errorlevel 1 (
     exit
 )
 
+:: Создаем директории для плагинов, профилей и загрузок, если они не существуют
 if not exist %plugins_dir% mkdir %plugins_dir%
 if not exist %profile_dir% mkdir %profile_dir%
 if not exist %download_dir% mkdir %download_dir%
 
+:: Проверяем, существует ли файл username.txt. Если нет, запрашиваем имя пользователя
 if not exist username.txt (
     set /p "username=Введите ваше имя: "
     echo %username% > username.txt
@@ -29,8 +32,10 @@ if not exist username.txt (
     set /p "username=<username.txt"
 )
 
+:: Устанавливаем путь к файлу профиля
 set "profile_file=%profile_dir%\%username%.txt"
 
+:: Если файл профиля не существует, создаем новый
 if not exist %profile_file% (
     echo Имя: %username% > %profile_file%
     echo Роль: новичок >> %profile_file%
@@ -39,10 +44,12 @@ if not exist %profile_file% (
     echo История: >> %profile_file%
 )
 
+:: Выполняем плагины, если они есть
 for %%P in (%plugins_dir%\*.bat) do (
     call %%P
 )
 
+:: Проверяем, существует ли репозиторий. Если нет, клонируем его, иначе обновляем
 if not exist %repo_dir% (
     echo Клонируем репозиторий...
     git clone %repo_url% %repo_dir%
@@ -75,6 +82,7 @@ echo - exit     : Выйти
 echo ==========================================
 set /p "command=Введите команду: "
 
+:: Обрабатываем введенные команды
 if /i "%command%"=="profile" goto view_profile
 if /i "%command%"=="view" goto view_files
 if /i "%command%"=="buy" goto buy_file
